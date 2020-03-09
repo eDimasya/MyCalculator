@@ -38,6 +38,7 @@
             app:layout_constraintTop_toTopOf="@+id/count_btn" app:layout_constraintEnd_toStartOf="@+id/count_btn"
             app:layout_constraintStart_toStartOf="parent"/>
     <Button
+            android:onClick="randomMe"
             android:text="Random"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
