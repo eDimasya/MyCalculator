@@ -1,6 +1,5 @@
 package com.example.mycalculator
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -28,12 +27,12 @@ class MainActivity : AppCompatActivity() {
         textView_Value.text = count.toString()
     }
 
-    fun randomMe (view: View){
+    /*fun randomMe (view: View){
         val randomIntent = Intent(this, secondActivity::class.java)
         val countString = textView_Value.text.toString()
         val count = Integer.parseInt(countString)
         randomIntent.putExtra(secondActivity.TOTAL_COUNT, count)
         startActivity(randomIntent)
 
-    }
+    }*/
 }

@@ -2,8 +2,6 @@ package com.example.mycalculator
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_second.*
-import java.util.*
 
 class secondActivity : AppCompatActivity() {
 
@@ -15,10 +13,10 @@ class secondActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_second)
-        showRandomNumber()
+        //showRandomNumber()
     }
 
-    fun showRandomNumber(){
+    /*fun showRandomNumber(){
         val count = intent.getIntExtra(TOTAL_COUNT, 0)
         val random = Random()
         var randomInt = 0
@@ -27,5 +25,5 @@ class secondActivity : AppCompatActivity() {
         }
         textView_RandomValue.text = Integer.toString(randomInt)
         textView_Label.text = getString(R.string.random_heading, count)
-    }
+    }*/
 }
