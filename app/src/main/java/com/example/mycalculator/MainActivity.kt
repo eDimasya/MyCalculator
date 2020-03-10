@@ -14,9 +14,11 @@ class MainActivity : AppCompatActivity() {
 
     fun incNumberFromString(view: View){
         var numberStr: String = InfixNotation_txtEdit.text.toString()
-        // var numb: Int = numberStr.toInt()
-        // var res: Int = numb + numb
-        Result_txt.text = numberStr.toString()
+        var numb: Int = numberStr.toInt()
+        var res: Int = numb + numb
+        Result_txt.text = res.toString()
     }
+
+    fun 
 
 }
