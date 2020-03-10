@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">My Calculator</string>
     <string name="entrance_text">Enter infix notation:</string>
-    <string name="random_heading">Random number between 0 and %1d</string>
+    <string name="result_string">Result</string>
+    <string name="entrance_textEdit">Infix notation</string>
+    <string name="btn_Clear">Clear</string>
+    <string name="btn_Result">Result</string>
 </resources>
