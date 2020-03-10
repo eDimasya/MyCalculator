@@ -49,6 +49,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintTop_toBottomOf="@+id/TextFields_constraintLayout">
         <Button
+                android:onClick="clearAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/Clear_btn"
@@ -58,6 +59,7 @@
                 android:layout_marginLeft="72dp"
                 android:layout_marginStart="72dp"/>
         <Button
+                android:onClick="doResult"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/Result_btn"
