@@ -38,6 +38,7 @@
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toStartOf="@+id/Result_btn"
             app:layout_constraintHorizontal_bias="0.347" app:layout_constraintVertical_bias="0.208"/>
     <Button
+            android:onClick="incNumberFromString"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/Result_btn" android:text="@string/btn_Result"
