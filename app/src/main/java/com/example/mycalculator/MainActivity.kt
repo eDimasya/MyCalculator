@@ -174,6 +174,16 @@ class MainActivity : AppCompatActivity() {
 
         var variableArray : Array<Int> = parseVariablesArray(Expression, indexOperandsArray)           //массив переменных
 
+        if (operandsArray[0] == "-"){       //проверка на унарный плюс в начале
+            variableArray[0] *= -1
+            removeItemArrayString(operandsArray, 0)
+            orderOperandsArray.forEachIndexed{index, el ->
+                if (el == 0)
+                {
+                    removeItemArrayInt(orderOperandsArray, index)
+                }
+            }
+        }
         result = calculation(variableArray, operandsArray, orderOperandsArray)
 
         return result
