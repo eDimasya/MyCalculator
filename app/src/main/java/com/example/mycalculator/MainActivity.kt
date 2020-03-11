@@ -153,7 +153,9 @@ class MainActivity : AppCompatActivity() {
                     tmpOrderOperands[indexOrder]
                 )      //удаление операции из упорядоченного массива очереди операций со смещением
             tmpOrderOperands.forEachIndexed{index, el ->    //уменьшение порядка после прохождения списка
-                tmpOrderOperands[index]--
+                if (el > tmpOrderOperands[indexOrder]) {
+                    tmpOrderOperands[index]--
+                }
             }
         }
         resultStr = tmpVarArray[0].toString()
