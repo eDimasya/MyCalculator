@@ -40,6 +40,26 @@ class MainActivity : AppCompatActivity() {
         return checkResult
     }
 
+    //Функция принимает на вход строку выражения калькулятора, и парсит её на переменные и операнды для выполнения отдельных операций
+    private fun doExpression(Expression: String): String {
+        var result: String = ""                     //строковая переменная с результатом
+
+        var operandsArray: Array<String> = parseOperands(Expression)      //вызов функции назначения массива операндов
+        var indexOperandsArray: Array<Int> = parseOperandIndexFromExpressionArray(Expression, operandsArray)  //вызов функции назначения массива индексов операндов
+        var tmpOperandsArray = parseUnaryMinusOperands(operandsArray, indexOperandsArray)                          //вызов функции удаления операнда из массива операндов, и присвоит его временному массиву, т.к. основной массив ещё пригодится
+        var tmpIndexOperandsArray = parseUnaryMinusIndexOperands(operandsArray, indexOperandsArray)             //вызов функции удаления из массива индексов операндов унарных минусов, и присвоения временному массиву
+        indexOperandsArray = tmpIndexOperandsArray
+        operandsArray = tmpOperandsArray
+
+        var variableArray : Array<Int> = parseVariablesArray(Expression, indexOperandsArray)           //массив переменных
+        //variableArray = parseUnaryMinusVariables(variableArray, operandsArray, indexOperandsArray)          //вызов функции обработки унарного минуса, переприсвоение массива операндов и переменных
+
+        var orderOperandsArray : Array<Int> = orderOfOperands(operandsArray)   //вызов функции назначения массива индексов порядка операндов
+        result = calculation(variableArray, operandsArray, orderOperandsArray)
+
+        return result
+    }
+
     //Функция ищет операнды в строке, возвращает массив символов операндов
     private fun parseOperands(Expression: String): Array <String> {
         var indexOperand: Int = 0              //индекс массива операндов
@@ -78,6 +98,99 @@ class MainActivity : AppCompatActivity() {
         return order
     }
 
+    //счётчик пар скобок
+    private fun bktPairCounter(Expression: String): Int{
+        var bktAmount : Int = 0
+        Expression.forEach { el ->
+            if (el == '(' || el == ')')
+                bktAmount++
+        }
+        return bktAmount /2
+    }
+
+    //возвращает массив индексов открытых скобок
+    private fun inBktIndexer(Expression: String, BktAmount: Int): Array <Int>{
+        var inBkt = Array <Int>(BktAmount){0}
+        var indexInBkt : Int = 0
+        Expression.forEachIndexed { index, el ->
+            if (el == '('){                         //если есть открывающаяся скобка
+                inBkt[indexInBkt] = index           //то занести индекс скобки в массив индексов открывающихся скобок
+                indexInBkt++
+            }
+        }
+        return inBkt
+    }
+
+    //возвращает массив индексов закрытых скобок
+    private fun outBktIndexer(Expression: String, BktAmount: Int): Array <Int>{
+        var outBkt = Array <Int>(BktAmount){0}
+        var indexOutBkt : Int = 0
+        Expression.forEachIndexed { index, el ->
+            if (el == '('){                         //если есть закрывающаяся скобка
+                outBkt[indexOutBkt] = index           //то занести индекс скобки в массив индексов закрывающихся скобок
+                indexOutBkt++
+            }
+        }
+        return outBkt
+    }
+
+    //Функция ищет операнды, и возвращает массив индексов порядка выполнения операндов с учётом скобок
+    private fun orderOfOperandsWithBkt(Expression: String, Operands: Array<String>, IndexOperands: Array<Int>): Array<Int>{
+        var bktPairAmount = bktPairCounter(Expression)     //количество пар скобок
+        var order = Array<Int>(Operands.size) { 0 }   //массив порядка операндов
+        var indexOrder: Int = 0       //инкримирующий порядок
+        var inBkt = inBktIndexer(Expression, bktPairAmount)   //создаём массив для индексов открывающихся скобок
+        var outBkt = outBktIndexer(Expression, bktPairAmount)   //создаём массив для индексов закрывающихся скобок
+        var maxInBktIndex : Int = 0
+        var subArrayIndexOperands = Array<Int>(Operands.size) {-1}
+        var subArrayIndexOperandsIndex : Int = 0
+        var subArrayOperands = Array<String>(Operands.size) {""}
+        var subArrayOperandsIndex : Int = 0
+        outBkt.forEachIndexed {indexOut, elOut ->       //ищем пару для превой закрытой скобки
+            inBkt.forEachIndexed {indexIn, elIn ->      //ищем пару из открытых скобок
+                if (elOut < elIn){                      //если индекс у открытой скобки максимально близко
+                    maxInBktIndex = indexIn             //то запомнить индекс максимально близкой открытой скобки
+                }
+            }
+            IndexOperands.forEachIndexed { indexOp, operandIndex ->             //ищем в массиве индексов операндов, а входит ли операнд диапазон между скобками?
+                if (operandIndex > maxInBktIndex && operandIndex < indexOut) {      //если входит, то вернуть подмассив, в котором будет переопределён порядок
+                    subArrayIndexOperands[subArrayIndexOperandsIndex] = indexOp
+                    subArrayIndexOperandsIndex++
+                    subArrayOperands[subArrayOperandsIndex] = Operands[indexOp]
+                    subArrayOperandsIndex++
+                }
+            }
+            subArrayOperands.forEachIndexed { index, el ->
+                if (el.toString() == "*" || el.toString() == "/") {
+                    order[indexOrder] = subArrayIndexOperands[index]
+                    indexOrder++
+                }
+            }
+            subArrayOperands.forEachIndexed { index, el ->
+                if (el.toString() == "+" || el.toString() == "-"){
+                    order[indexOrder] = subArrayIndexOperands[index]
+                    indexOrder++
+                }
+            }
+        }
+
+        if (bktPairAmount == 0) {       //Если скобок нет, то алгоритм стандартный для установления приоритета
+            Operands.forEachIndexed { index, el ->
+                if (el.toString() == "*" || el.toString() == "/") {         //если операндом является умножение или деление,
+                    order[indexOrder] = index     //то в массиве порядка указать индекс операнда в массиве операндов
+                    indexOrder++                  //инкримировать счётчик индекса
+                }
+            }
+            Operands.forEachIndexed { index, el ->
+                if (el.toString() == "+" || el.toString() == "-") {         //если операндом является сложение или вычитание,
+                    order[indexOrder] = index     //то в массиве порядка указать индекс операнда в массиве операндов
+                    indexOrder++                  //инкримировать счётчик индекса
+                }
+            }
+        }
+        return order
+    }
+
     //Функция возвращает массив индексов операндов в выражении
     private fun parseOperandIndexFromExpressionArray(Expression: String, Operands: Array<String>): Array<Int>{
         var indexOperand: Int = 0
@@ -110,6 +223,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
         variablesStr.forEachIndexed{index, el ->        //перевод всех элементов массива в целочисленный формат
+            variablesStr[index] = variablesStr[index].replace("(", "")
+            variablesStr[index] = variablesStr[index].replace(")", "")
             variablesInt[index] = el.toInt()
         }
         return variablesInt
@@ -204,25 +319,7 @@ class MainActivity : AppCompatActivity() {
         return tmpIndexOperands
     }
 
-    //Функция принимает на вход строку выражения калькулятора, и парсит её на переменные и операнды для выполнения отдельных операций
-    private fun doExpression(Expression: String): String {
-        var result: String = ""                     //строковая переменная с результатом
 
-        var operandsArray: Array<String> = parseOperands(Expression)      //вызов функции назначения массива операндов
-        var indexOperandsArray: Array<Int> = parseOperandIndexFromExpressionArray(Expression, operandsArray)  //вызов функции назначения массива индексов операндов
-        var tmpOperandsArray = parseUnaryMinusOperands(operandsArray, indexOperandsArray)                          //вызов функции удаления операнда из массива операндов, и присвоит его временному массиву, т.к. основной массив ещё пригодится
-        var tmpIndexOperandsArray = parseUnaryMinusIndexOperands(operandsArray, indexOperandsArray)             //вызов функции удаления из массива индексов операндов унарных минусов, и присвоения временному массиву
-        indexOperandsArray = tmpIndexOperandsArray
-        operandsArray = tmpOperandsArray
-
-        var variableArray : Array<Int> = parseVariablesArray(Expression, indexOperandsArray)           //массив переменных
-        //variableArray = parseUnaryMinusVariables(variableArray, operandsArray, indexOperandsArray)          //вызов функции обработки унарного минуса, переприсвоение массива операндов и переменных
-
-        var orderOperandsArray : Array<Int> = orderOfOperands(operandsArray)   //вызов функции назначения массива индексов порядка операндов
-        result = calculation(variableArray, operandsArray, orderOperandsArray)
-
-        return result
-    }
 
     //Функция на вход принимает два агрумента и операнд, затем производит операцию
     private fun operationVariables(VarA: Int, VarB: Int, Operand: String): Int {
