@@ -30,13 +30,13 @@ class MainActivity : AppCompatActivity() {
     private fun parseOperands(Expression: String): Array <String> {
         var indexOperand: Int = 0              //индекс массива операндов
         var countOperand : Int = 0
-        Expression.forEach { el ->
+        Expression.forEach {el ->
             if ((el == '+') || (el == '-') || (el == '*') || (el == '/')) {     //Если в строке выражения есть операнд,
                 countOperand++
             }
         }
         var operandsArray = Array<String>(countOperand) {""}     //объявляем массив операндов
-        Expression.forEach { el ->       //Если перебор всей строки, и поиск операндов
+        Expression.forEach {el ->       //Если перебор всей строки, и поиск операндов
             if ((el == '+') || (el == '-') || (el == '*') || (el == '/')) {     //Если в строке выражения есть операнд,
                 operandsArray[indexOperand] = el.toString()   //то добавить операнд в массив операндов
                 indexOperand++
@@ -49,13 +49,13 @@ class MainActivity : AppCompatActivity() {
     private fun orderOfOperands(operands: Array<String>): Array<Int>{
         var order = Array<Int>(operands.size) {0}   //массив порядка операндов
         var indexOrder: Int = 0       //инкримирующий порядок
-        operands.forEachIndexed { index, el ->
+        operands.forEachIndexed {index, el ->
             if (el.toString() == "*" || el.toString() == "/") {         //если операндом является умножение или деление,
                 order[indexOrder] = index     //то в массиве порядка указать индекс операнда в массиве операндов
                 indexOrder++                  //инкримировать счётчик индекса
             }
         }
-        operands.forEachIndexed { index, el ->
+        operands.forEachIndexed {index, el ->
             if (el.toString() == "+" || el.toString() == "-") {         //если операндом является сложение или вычитание,
                 order[indexOrder] = index     //то в массиве порядка указать индекс операнда в массиве операндов
                 indexOrder++                  //инкримировать счётчик индекса
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
     private fun parseOperandIndexFromExpressionArray(Expression: String, operands: Array<String>): Array<Int>{
         var indexOperand: Int = 0
         var operandIndexArray = Array<Int>(operands.size) {0}
-        Expression.forEachIndexed { index, el ->
+        Expression.forEachIndexed {index, el ->
             if ((el == '+') || (el == '-') || (el == '*') || (el == '/')) {     //Если в строке выражения есть операнд,
                 operandIndexArray[indexOperand] =  index   //то добавить индекс операнда в массив операндов
                 indexOperand++
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         var variablesInt = Array<Int>(expression.length - operandsIndex.size) {0}        //массив переменных, каждая переменная - число
         var indexOperands : Int = 0     //индекс массива индексов операндов
         var indexVar: Int = 0           //индекс массива переменных
-        expression.forEachIndexed { index, el ->     //перебор строки с выражением
+        expression.forEachIndexed {index, el ->     //перебор строки с выражением
             if (index < operandsIndex[indexOperands] && indexOperands <= operandsIndex.lastIndex){      //если индекс текущего элемента меньше индекса операнда, и не вышли за перделы массива операндов
                 variablesStr[indexVar] += el.toString()      //то переложить его в отдельный массив с элементами
             }
@@ -102,7 +102,62 @@ class MainActivity : AppCompatActivity() {
             variablesInt[index] = el.toInt()
         }
         return variablesInt
+    }
 
+    //функция удаления элемента из массива (обнуления и смещения)
+    private fun removeItemArrayInt(inputArray:Array <Int>, indexRemove: Int): Array<Int>{
+        var resultArray = Array<Int>(inputArray.size - 1) {0}
+        resultArray.forEachIndexed{index, el ->
+            if (index >= indexRemove) {
+                resultArray[index] = inputArray[index + 1]
+            }
+            else {
+                resultArray[index] = inputArray[index]
+            }
+        }
+        return resultArray
+    }
+    private fun removeItemArrayString(inputArray:Array <String>, indexRemove: Int): Array<String>{
+        var resultArray = Array<String>(inputArray.size - 1) {""}
+        resultArray.forEachIndexed{index, el ->
+            if (index >= indexRemove) {
+                resultArray[index] = inputArray[index + 1]
+            }
+            else {
+                resultArray[index] = inputArray[index]
+            }
+        }
+        return resultArray
+    }
+
+    //Функция делает вычисления, исходя из приоритетов операций, и перебирая массивы элементов
+    private fun calculation(variables: Array<Int>, operands: Array<String>, orderOperands: Array<Int>): String{
+        var resultStr : String = ""
+        var tmpVarArray = variables
+        var tmpOrderOperands = orderOperands
+        var tmpOperands = operands
+        var indexVar: Int = 0
+        for (indexOrder in 0 .. (tmpOrderOperands.size - 1)){       //Перебор в массиве очереди операций
+                indexVar = tmpOrderOperands[indexOrder]     //текущая переменная в том же порядке, что и операция, которая сейчас в очереди
+                tmpVarArray[indexVar] = operationVariables(
+                    tmpVarArray[indexVar],
+                    tmpVarArray[indexVar + 1],
+                    tmpOperands[tmpOrderOperands[indexOrder]]
+                )     //в нужный элемент массива присваивается вычисленное значение, в соответствии с операндом
+                tmpVarArray = removeItemArrayInt(
+                    tmpVarArray,
+                    indexVar + 1
+                )     //удаление следующего элемента из массива со смещением
+                tmpOperands = removeItemArrayString(
+                    tmpOperands,
+                    tmpOrderOperands[indexOrder]
+                )      //удаление операции из упорядоченного массива очереди операций со смещением
+            tmpOrderOperands.forEachIndexed{index, el ->    //уменьшение порядка после прохождения списка
+                tmpOrderOperands[index]--
+            }
+        }
+        resultStr = tmpVarArray[0].toString()
+        return resultStr
     }
 
     //Функция принимает на вход строку выражения калькулятора, и парсит её на переменные и операнды для выполнения отдельных операций
@@ -117,24 +172,24 @@ class MainActivity : AppCompatActivity() {
 
         var variableArray : Array<Int> = parseVariablesArray(Expression, indexOperandsArray)           //массив переменных
 
-        result = variableArray[0].toString()
+        result = calculation(variableArray, operandsArray, orderOperandsArray)
+
         return result
     }
 
     //Функция на вход принимает два агрумента и операнд, затем производит операцию
-    fun operationVariables(Var_A_Str: String, Var_B_Str: String, Operand: String): Int {
+    private fun operationVariables(varA: Int, varB: Int, Operand: String): Int {
         var result: Int = 0        //переменная будет выводить результат
-        var var_A: Int = Var_A_Str.toInt()      //конвертация первой переменной из строки в число
-        var var_b: Int = Var_B_Str.toInt()      //конвертация второй переменной из строки в число
         result = when (Operand) {     //оператор выбора. в зависимости от используемого операнда, будет вычислен результат
-            "+" -> var_A + var_b       //если сложение, то выполнить операцию сложения
-            "-" -> var_A - var_b       //если вычитание, то выполнить вычитание
-            "*" -> var_A * var_b       //если умножение, то выполнить умножение
-            "/" -> (var_A / var_b) - (var_A % var_b)       //если деление, то вернуть целочисленный остаток от деления
+            "+" -> varA + varB       //если сложение, то выполнить операцию сложения
+            "-" -> varA - varB       //если вычитание, то выполнить вычитание
+            "*" -> varA * varB       //если умножение, то выполнить умножение
+            "/" -> (varA / varB) - (varA % varB)       //если деление, то вернуть целочисленный остаток от деления
             else -> 0
         }
         return result
     }
 
 }
+
 
